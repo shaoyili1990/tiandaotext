@@ -26,6 +26,7 @@ from tiandao_core.core.y_value import YValueSystem, TriggerType
 from tiandao_core.rendao.weight_network import WeightNetwork, CharacterClass
 from tiandao_core.rendao.lao_tian_qi import LaoTianQi, ActionValue
 from tiandao_core.rendao.butterfly_effect import ButterflyEffectSystem, Position3D
+from evolution.evolution_system import EvolutionSystem
 
 
 @dataclass
@@ -62,6 +63,7 @@ class ContinuationSystem:
         self.weight_network = WeightNetwork()
         self.lao_tian_qi = LaoTianQi()
         self.butterfly_effect = ButterflyEffectSystem()
+        self.evolution_system = EvolutionSystem(api=api)  # 演化系统
         self.continuation_history: List[ContinuationResult] = []
 
     def prepare_context(
@@ -190,6 +192,14 @@ class ContinuationSystem:
                 result.y_value_changes[profile.info.name] = (
                     change.old_weight, change.new_weight
                 )
+
+            # 调用演化系统更新角色状态（AI生成内容后，必须通过天道/人道系统评判）
+            evolution_result = self.evolution_system.evolve_character(
+                character_name=profile.info.name,
+                action=content[:500],  # AI生成的内容作为行为
+                context=context.current_chapter
+            )
+            result.character_states[profile.info.name] = evolution_result.get("current_state", {})
 
         # 蝴蝶效应检测
         physics_alerts = self.butterfly_effect.check_physics_theorems()
