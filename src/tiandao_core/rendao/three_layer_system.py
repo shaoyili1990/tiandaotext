@@ -106,11 +106,18 @@ class ThreeLayerSystem:
         self.butterfly_effect.register_character(name, y_value, position, weight, mbti)
 
         # 因果蝴蝶层 - 时空管理
-        coord = SpacetimeCoordinate(
-            x=position.x, y=position.y, z=position.z,
-            timestamp=datetime.now().isoformat()
-        )
-        self.spacetime_manager.record_presence(name, coord, MovementType.NATURAL)
+        if position is not None:
+            coord = SpacetimeCoordinate(
+                x=position.x, y=position.y, z=position.z,
+                timestamp=datetime.now().isoformat()
+            )
+            self.spacetime_manager.record_presence(name, coord, MovementType.NATURAL)
+        else:
+            coord = SpacetimeCoordinate(
+                x=0.0, y=0.0, z=0.0,
+                timestamp=datetime.now().isoformat()
+            )
+            self.spacetime_manager.record_presence(name, coord, MovementType.NATURAL)
 
         # 天道层 - 初始化Y值规则
         self.y_value_rules[name] = {
