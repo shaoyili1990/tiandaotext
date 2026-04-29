@@ -15,12 +15,20 @@ Butterfly Effect - 蝴蝶效应传导系统
 - 吞噬与依附: Y>70 与 Y<30 且存在支配关系
 - 绝对碰撞: 两个 Y>70 目标互斥
 - 变量击穿: 常态 40-60 者遭遇极致爱/恨/愧疚
+
+时空管控:
+- 所有位置移动必须通过 SpacetimeManager 记录
+- 同一角色同一时间点只能处于唯一位置
+- 超自然能力必须预先注册
 """
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 from enum import Enum
+from datetime import datetime
 import math
+
+from .spacetime_manager import SpacetimeManager, SpacetimeCoordinate, MovementType
 
 
 class InfluenceType(Enum):
@@ -93,6 +101,7 @@ class ButterflyEffectSystem:
         self.characters: Dict[str, CharacterState] = {}
         self.effect_history: List[ButterflyEffect] = []
         self.collision_pairs: List[Tuple[str, str]] = []
+        self.spacetime_manager: SpacetimeManager = SpacetimeManager()  # 时空管控
 
     def register_character(
         self,
@@ -124,6 +133,19 @@ class ButterflyEffectSystem:
             if y_value is not None:
                 state.y_value = y_value
             if position is not None:
+                # 记录位置变化到时空管控系统
+                from .spacetime_manager import SpacetimeCoordinate, MovementType
+                coord = SpacetimeCoordinate(
+                    x=position.x,
+                    y=position.y,
+                    z=position.z,
+                    timestamp=datetime.now().isoformat()
+                )
+                self.spacetime_manager.record_presence(
+                    character_name=name,
+                    coordinate=coord,
+                    movement_type=MovementType.NATURAL
+                )
                 state.position = position
             if weight is not None:
                 state.weight = weight

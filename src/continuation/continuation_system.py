@@ -26,6 +26,7 @@ from tiandao_core.core.y_value import YValueSystem, TriggerType
 from tiandao_core.rendao.weight_network import WeightNetwork, CharacterClass
 from tiandao_core.rendao.lao_tian_qi import LaoTianQi, ActionValue
 from tiandao_core.rendao.butterfly_effect import ButterflyEffectSystem, Position3D
+from tiandao_core.rendao.spacetime_manager import SpacetimeManager
 from evolution.evolution_system import EvolutionSystem
 
 
@@ -63,6 +64,7 @@ class ContinuationSystem:
         self.weight_network = WeightNetwork()
         self.lao_tian_qi = LaoTianQi()
         self.butterfly_effect = ButterflyEffectSystem()
+        self.spacetime_manager = SpacetimeManager()  # 时空绝对位置管控
         self.evolution_system = EvolutionSystem(api=api)  # 演化系统
         self.continuation_history: List[ContinuationResult] = []
 
@@ -290,6 +292,7 @@ Y值基线: {baseline_y}
             "weight_network": self.weight_network.get_network_summary(),
             "lao_tian_qi": self.lao_tian_qi.get_judgment_summary(),
             "butterfly_effect": self.butterfly_effect.get_effect_summary(),
+            "spacetime_manager": self.spacetime_manager.get_spacetime_summary(),
             "continuation_count": len(self.continuation_history)
         }
 
