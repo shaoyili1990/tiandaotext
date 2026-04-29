@@ -34,6 +34,7 @@ from .weight_network import WeightNetwork, CharacterClass, WeightChange
 from .lao_tian_qi import LaoTianQi, LaoTianQiJudgment, ActionValue
 from .butterfly_effect import ButterflyEffectSystem, InfluenceType, Position3D
 from .spacetime_manager import SpacetimeManager, SpacetimeCoordinate, MovementType
+from .world_repair import WorldRepair, RepairType, WorldRepairContext
 
 
 class VariableType(Enum):
@@ -79,6 +80,9 @@ class ThreeLayerSystem:
         self.weight_network = WeightNetwork()
         self.butterfly_effect = ButterflyEffectSystem()
         self.spacetime_manager = SpacetimeManager()
+
+        # Coze干涉 - 世界性整体修复（集成到三层系统）
+        self.world_repair = WorldRepair(three_layer_system=self)
 
         # 变数记录
         self.variable_history: List[VariableRecord] = []
