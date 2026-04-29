@@ -16,13 +16,13 @@ License: MIT
 __version__ = "2.0.0"
 __author__ = "Tiandao System"
 
-from tiandao_core.core.y_value import YValueSystem
-from tiandao_core.core.mbti import MBTISystem
-from tiandao_core.core.memory import MemorySystem
-from tiandao_core.core.motivation import MotivationSystem
-from tiandao_core.core.author import AuthorConstraintSystem
-from tiandao_core.core.profile import CharacterProfile, CharacterInfo
-from tiandao_core.core.psychology import PsychologyEngine
+from .core.y_value import YValueSystem
+from .core.mbti import MBTISystem
+from .core.memory import MemorySystem
+from .core.motivation import MotivationSystem
+from .core.author import AuthorConstraintSystem
+from .core.profile import CharacterProfile, CharacterInfo
+from .core.psychology import PsychologyEngine
 
 __all__ = [
     "YValueSystem",

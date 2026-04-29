@@ -23,17 +23,17 @@ from typing import Dict, List, Optional, Set, Tuple, Any
 from enum import Enum
 import math
 
-from tiandao_core.core.y_value import (
+from .y_value import (
     YValueSystem, YValueConfig, YValueState, TriggerType, TriggerResult
 )
-from tiandao_core.core.mbti import MBTISystem, MBTIType, BigFiveTraits
-from tiandao_core.core.memory import (
+from .mbti import MBTISystem, MBTIType, BigFiveTraits
+from .memory import (
     MemorySystem, MemoryType, MemoryNode, MemoryRetrieval
 )
-from tiandao_core.core.motivation import (
+from .motivation import (
     MotivationSystem, InstinctType, MotivationLayer, Motivation
 )
-from tiandao_core.core.author import AuthorConstraintSystem, NarrativeMode
+from .author import AuthorConstraintSystem, NarrativeMode
 
 
 class MoralSensitivity(Enum):

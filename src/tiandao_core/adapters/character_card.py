@@ -8,8 +8,8 @@ from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Any
 import json
 
-from tiandao_core.core.profile import CharacterProfile, CharacterInfo
-from tiandao_core.core.mbti import MBTISystem
+from ..core.profile import CharacterProfile, CharacterInfo
+from ..core.mbti import MBTISystem
 
 
 @dataclass

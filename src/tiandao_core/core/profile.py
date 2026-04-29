@@ -16,12 +16,12 @@ from typing import Dict, List, Optional, Set, Any
 from enum import Enum
 import json
 
-from tiandao_core.core.y_value import YValueSystem, YValueConfig, YValueState
-from tiandao_core.core.mbti import MBTISystem, BigFiveTraits
-from tiandao_core.core.memory import MemorySystem, MemoryType, MemoryNode
-from tiandao_core.core.motivation import MotivationSystem, InstinctType, MotivationLayer
-from tiandao_core.core.author import AuthorConstraintSystem, RoleConstraint
-from tiandao_core.core.psychology import PsychologyEngine, EmotionalState, SevenEmotions
+from .y_value import YValueSystem, YValueConfig, YValueState
+from .mbti import MBTISystem, BigFiveTraits
+from .memory import MemorySystem, MemoryType, MemoryNode
+from .motivation import MotivationSystem, InstinctType, MotivationLayer
+from .author import AuthorConstraintSystem, RoleConstraint
+from .psychology import PsychologyEngine, EmotionalState, SevenEmotions
 
 
 @dataclass
