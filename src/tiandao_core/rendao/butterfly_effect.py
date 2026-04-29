@@ -250,6 +250,8 @@ class ButterflyEffectSystem:
         1. 吞噬与依附: Y>70 与 Y<30 且存在支配关系
         2. 绝对碰撞: 两个 Y>70 目标互斥
         3. 变量击穿: 常态 40-60 者遭遇极致爱/恨/愧疚
+
+        返回触发的定理列表，并直接应用到角色Y值
         """
         triggered = []
         characters_list = list(self.characters.values())
@@ -265,6 +267,8 @@ class ButterflyEffectSystem:
                     triggered.append(
                         f"吞噬与依附: {high.name}(Y={high.y_value}) 正在影响 {low.name}(Y={low.y_value})"
                     )
+                    # 吞噬效应：低Y值角色被压制，Y值下降
+                    low.y_value = max(1, low.y_value - 5)
 
         # 检查绝对碰撞
         if len(high_y_chars) >= 2:
@@ -275,6 +279,9 @@ class ButterflyEffectSystem:
                         triggered.append(
                             f"绝对碰撞: {char1.name}(Y={char1.y_value}) 与 {char2.name}(Y={char2.y_value}) 即将冲突"
                         )
+                        # 绝对碰撞：两个高Y角色相互抵消，各降低5点
+                        char1.y_value = max(1, char1.y_value - 5)
+                        char2.y_value = max(1, char2.y_value - 5)
 
         return triggered
 

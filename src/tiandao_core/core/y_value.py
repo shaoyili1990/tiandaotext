@@ -13,7 +13,7 @@ Y-Value System - 主观意识凝练强度系统
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 from enum import Enum
 import math
 
@@ -24,6 +24,14 @@ class TriggerType(Enum):
     PTSD = "ptsd"                           # PTSD扳机
     MAJOR_EVENT = "major_event"             # 重大人生事件
     EMOTIONAL_EXTREME = "emotional_extreme"  # 情绪极限
+
+
+class CompensationType(Enum):
+    """补偿类型枚举 - 4种补偿机制"""
+    BREAKTHROUGH_COMP = "breakthrough_comp"     # 被击穿后补偿
+    GUILT_EXPLOSION = "guilt_explosion"         # 愧疚爆发补偿
+    SELF_NARCOTIZATION = "self_narcotization"  # 自我麻痹补偿
+    ATTACHMENT_FILLING = "attachment_filling"   # 依恋填补补偿
 
 
 @dataclass
@@ -42,6 +50,7 @@ class YValueState:
     current_y: int
     baseline_y: int                          # 自身基线 (MBTI+创伤决定)
     is_compensating: bool = False            # 是否处于补偿状态
+    compensation_type: Optional[CompensationType] = None  # 补偿类型
     compensation_remaining: int = 0          # 补偿剩余时间
     trigger_history: List[Dict] = field(default_factory=list)
 
@@ -149,7 +158,7 @@ class YValueSystem:
         """
         触发击穿机制
 
-        被击穿后，Y值瞬间跃迁为「自身基线±10」
+        被击穿后，Y值瞬间跃迁为「自身基线±10」，并启动被击穿后补偿
         """
         if defender_y is None:
             defender_y = self.state.current_y
@@ -168,7 +177,7 @@ class YValueSystem:
                 "defender_y": defender_y,
                 "delta": delta,
                 "threshold": threshold
-            })
+            }, CompensationType.BREAKTHROUGH_COMP)
 
             return TriggerResult(
                 triggered=True,
@@ -186,22 +195,28 @@ class YValueSystem:
             message=f"未达到击穿阈值 (ΔY={delta}, 需要≥{threshold})"
         )
 
-    def trigger_ptsd(self, trauma_y: int) -> TriggerResult:
+    def trigger_ptsd(self, trauma_y: int, guilt_explosion: bool = False) -> TriggerResult:
         """
         PTSD扳机触发
 
         触发条件: 发生与过往创伤高度相似的事件
         特性: Y值瞬间跃迁（无规律，贴合创伤者心理）
         示例: 枫看到战友牺牲相关场景，Y值从70瞬间冲高至85
+
+        参数:
+        - trauma_y: 创伤Y值
+        - guilt_explosion: 是否为愧疚爆发补偿类型
         """
         old_y = self.state.current_y
 
         # PTSD触发，Y值冲向高位（防御性跃迁）
         new_y = min(self.config.max_y, trauma_y)
 
+        comp_type = CompensationType.GUILT_EXPLOSION if guilt_explosion else CompensationType.BREAKTHROUGH_COMP
+
         self._apply_transition(new_y, TriggerType.PTSD, {
             "trauma_level": abs(trauma_y - self.state.baseline_y)
-        })
+        }, comp_type)
 
         return TriggerResult(
             triggered=True,
@@ -212,7 +227,7 @@ class YValueSystem:
             message=f"PTSD触发: Y值从{old_y}瞬间跃迁至{new_y}"
         )
 
-    def trigger_major_event(self, event_type: str, intensity: int = 1) -> TriggerResult:
+    def trigger_major_event(self, event_type: str, intensity: int = 1, compensation_type: Optional[CompensationType] = None) -> TriggerResult:
         """
         重大人生事件触发
 
@@ -239,7 +254,7 @@ class YValueSystem:
         self._apply_transition(new_y, TriggerType.MAJOR_EVENT, {
             "event_type": event_type,
             "intensity": intensity
-        })
+        }, compensation_type)
 
         return TriggerResult(
             triggered=True,
@@ -250,21 +265,34 @@ class YValueSystem:
             message=f"重大事件触发 [{event_type}]: Y值从{old_y}跃迁至{new_y}"
         )
 
-    def trigger_emotional_extreme(self, emotion_type: str) -> TriggerResult:
+    def trigger_emotional_extreme(self, emotion_type: str, compensation_type: Optional[CompensationType] = None) -> TriggerResult:
         """
         情绪极限触发
 
         触发条件: 极致愧疚、极致愤怒、极致逆反
         特性: 突破自身意识控制，Y值瞬间冲高
+
+        参数:
+        - emotion_type: 情绪类型
+        - compensation_type: 补偿类型（自我麻痹或依恋填补等）
         """
         old_y = self.state.current_y
 
         # 情绪极限触发，Y值冲向极高
         new_y = min(self.config.max_y, 95)
 
+        # 根据情绪类型确定补偿类型
+        if compensation_type is None:
+            if emotion_type in ["guilt", "shame", "remorse"]:
+                compensation_type = CompensationType.GUILT_EXPLOSION
+            elif emotion_type in ["numb", "denial", "escape"]:
+                compensation_type = CompensationType.SELF_NARCOTIZATION
+            elif emotion_type in ["attachment", "longing", "dependence"]:
+                compensation_type = CompensationType.ATTACHMENT_FILLING
+
         self._apply_transition(new_y, TriggerType.EMOTIONAL_EXTREME, {
             "emotion_type": emotion_type
-        })
+        }, compensation_type)
 
         return TriggerResult(
             triggered=True,
@@ -275,30 +303,55 @@ class YValueSystem:
             message=f"情绪极限触发 [{emotion_type}]: Y值从{old_y}跃迁至{new_y}"
         )
 
-    def _apply_transition(self, new_y: int, trigger_type: TriggerType, context: Dict):
+    def _apply_transition(self, new_y: int, trigger_type: TriggerType, context: Dict, compensation_type: Optional[CompensationType] = None):
         """应用Y值跃迁"""
         old_y = self.state.current_y
         self.state.current_y = max(self.config.min_y, min(self.config.max_y, new_y))
         self.state.is_compensating = True
+        self.state.compensation_type = compensation_type
         self.state.compensation_remaining = self.config.compensation_duration
 
         self.state.trigger_history.append({
             "type": trigger_type.value,
             "old_y": old_y,
             "new_y": new_y,
-            "context": context
+            "context": context,
+            "compensation_type": compensation_type.value if compensation_type else None
         })
 
     def process_compensation(self) -> bool:
         """
         处理补偿机制
         补偿机制: 不是恢复，是心理缓冲，持续时间短（1~3个剧情节点）
+
+        4种补偿类型:
+        1. 被击穿后补偿(BREAKTHROUGH_COMP): Y值临时下降后回升
+        2. 愧疚爆发补偿(GUILT_EXPLOSION): Y值冲高后缓慢回落
+        3. 自我麻痹补偿(SELF_NARCOTIZATION): Y值被压制到低位
+        4. 依恋填补补偿(ATTACHMENT_FILLING): Y值围绕基线波动
         """
         if self.state.is_compensating and self.state.compensation_remaining > 0:
+            # 根据补偿类型应用不同的处理
+            if self.state.compensation_type == CompensationType.BREAKTHROUGH_COMP:
+                # 被击穿后: Y值暂时降低，结束时回弹
+                pass  # 由回弹机制处理
+            elif self.state.compensation_type == CompensationType.GUILT_EXPLOSION:
+                # 愧疚爆发: Y值保持高位，缓慢下降
+                if self.state.compensation_remaining > 1:
+                    self.state.current_y = max(self.state.baseline_y, self.state.current_y - 2)
+            elif self.state.compensation_type == CompensationType.SELF_NARCOTIZATION:
+                # 自我麻痹: Y值被压制到低位
+                self.state.current_y = max(1, self.state.current_y - 1)
+            elif self.state.compensation_type == CompensationType.ATTACHMENT_FILLING:
+                # 依恋填补: Y值围绕基线波动
+                diff = self.state.baseline_y - self.state.current_y
+                self.state.current_y += int(diff * 0.1)
+
             self.state.compensation_remaining -= 1
 
             if self.state.compensation_remaining == 0:
                 self.state.is_compensating = False
+                self.state.compensation_type = None
                 return True  # 补偿结束，触发回弹
 
         return False
@@ -351,6 +404,7 @@ class YValueSystem:
             "current_y": self.state.current_y,
             "baseline_y": self.state.baseline_y,
             "is_compensating": self.state.is_compensating,
+            "compensation_type": self.state.compensation_type.value if self.state.compensation_type else None,
             "compensation_remaining": self.state.compensation_remaining,
             "threshold": self.get_threshold(),
             "trigger_count": len(self.state.trigger_history),

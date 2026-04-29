@@ -472,7 +472,7 @@ class MBTISystem:
         }
 
         max_score = 0
-        best_type = "INTJ"
+        best_type = "UNKNOWN"
 
         for mbti_type, patterns in tag_patterns.items():
             score = sum(1 for tag in tags for pattern in patterns if pattern in tag)

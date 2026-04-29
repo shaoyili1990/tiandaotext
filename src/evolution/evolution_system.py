@@ -61,6 +61,7 @@ class CharacterEvolution:
     character_class: str
     memory_count: int
     trauma_level: float
+    mbti: str = "UNKNOWN"
     is_insane: bool = False
     is_brain_dead: bool = False
     evolution_history: List[EvolutionEvent] = field(default_factory=list)
@@ -93,7 +94,8 @@ class EvolutionSystem:
     def register_character(
         self,
         character_profile: CharacterProfile,
-        initial_weight: int = 50
+        initial_weight: int = 50,
+        character_mbti: str = "UNKNOWN"
     ):
         """注册角色到演化系统"""
         name = character_profile.info.name
@@ -111,7 +113,8 @@ class EvolutionSystem:
             weight=initial_weight,
             character_class=self._infer_class_from_weight(initial_weight).value,
             memory_count=0,
-            trauma_level=character_profile.info.trauma_level
+            trauma_level=character_profile.info.trauma_level,
+            mbti=character_mbti
         )
 
     def _infer_class_from_weight(self, weight: int) -> CharacterClass:
@@ -144,7 +147,7 @@ class EvolutionSystem:
         # 老天气评判
         judgment = self.lao_tian_qi.evaluate_action(
             action=action,
-            character_mbti="INTJ",  # 需要从角色获取
+            character_mbti=evolution.mbti if evolution.mbti else "UNKNOWN",
             character_y=evolution.current_y
         )
 
