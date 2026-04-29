@@ -18,7 +18,6 @@ LaoTianQi - 老天气变量系统
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 from enum import Enum
-import random
 
 
 class ActionValue(Enum):
@@ -310,7 +309,11 @@ class LaoTianQi:
         }
 
         base_messages = messages[action_value]
-        selected = random.choice(base_messages)
+        # 天道不允许随机，所有选择基于字符特征码确定性选择
+        # 确保同一条件始终产生同一结果
+        char_seed = sum(ord(c) for c in mbti) if mbti else 0
+        index = char_seed % len(base_messages)
+        selected = base_messages[index]
 
         if conflict_hints:
             selected += f" (检测到冲突: {len(conflict_hints)})"
